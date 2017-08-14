@@ -33,4 +33,5 @@ dependencies {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'stax', module: 'stax'
     }
+    compile 'com.jakewharton:butterknife:6.1.0'
 }

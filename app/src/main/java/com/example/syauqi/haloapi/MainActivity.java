@@ -14,6 +14,9 @@ import com.example.syauqi.haloapi.api.UserAPIService;
 import com.example.syauqi.haloapi.model.Result;
 import com.example.syauqi.haloapi.util.Const;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -25,34 +28,21 @@ public class MainActivity extends AppCompatActivity {
     private Retrofit retrofit;
     private ProgressDialog dialog;
 
+    @InjectView(R.id.toolbar)
+    Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button btGetAsModel = (Button) findViewById(R.id.bt_getasmodel);
-        Button btGetAsJSON = (Button) findViewById(R.id.bt_getasjson);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        ButterKnife.inject(this);
 
         dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
         dialog.setMessage("Loading");
 
         initializeRetrofit();
-        btGetAsModel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.show();
-                getDataAsModel();
-            }
-        });
-
-        btGetAsJSON.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.show();
-                getDataAsJSON();
-            }
-        });
 
         setSupportActionBar(toolbar);
     }
@@ -64,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void getDataAsModel(){
+    @OnClick(R.id.bt_getasmodel)
+    public void getDataAsModel(){
+        dialog.show();
         UserAPIService apiService = retrofit.create(UserAPIService.class);
         Call<Result> result = apiService.getResultInfo();
         result.enqueue(new Callback<Result>() {
@@ -88,7 +80,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getDataAsJSON(){
+    @OnClick(R.id.bt_getasjson)
+    public void getDataAsJSON(){
+        dialog.show();
         UserAPIService apiService = retrofit.create(UserAPIService.class);
         Call<ResponseBody> result = apiService.getResultAsJSON();
         result.enqueue(new Callback<ResponseBody>() {
