@@ -8,11 +8,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.syauqi.haloapi.api.HaloAPIService;
 import com.example.syauqi.haloapi.api.UserAPIService;
 import com.example.syauqi.haloapi.model.Result;
 import com.example.syauqi.haloapi.util.Const;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -28,6 +33,24 @@ public class MainActivity extends AppCompatActivity {
     private Retrofit retrofit;
     private ProgressDialog dialog;
 
+    @InjectView(R.id.et_firstname)
+    EditText firstname;
+
+    @InjectView(R.id.et_lastname)
+    EditText lastname;
+
+    @InjectView(R.id.et_username)
+    EditText username;
+
+    @InjectView(R.id.et_message)
+    EditText message;
+
+    @InjectView(R.id.et_age)
+    EditText age;
+
+    @InjectView(R.id.et_sex)
+    EditText sex;
+
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
 
@@ -42,14 +65,14 @@ public class MainActivity extends AppCompatActivity {
         dialog.setIndeterminate(true);
         dialog.setMessage("Loading");
 
-        initializeRetrofit();
+        initializeRetrofit(Const.BASE_API_URL);
 
         setSupportActionBar(toolbar);
     }
 
-    private void initializeRetrofit(){
+    private void initializeRetrofit(String url){
         retrofit = new Retrofit.Builder()
-                .baseUrl(Const.BASE_API_URL)
+                .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -88,21 +111,88 @@ public class MainActivity extends AppCompatActivity {
         result.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                dialog.dismiss();
                 try {
-                    dialog.dismiss();
                     Toast.makeText(MainActivity.this," response version "+response.body().string(),Toast.LENGTH_SHORT).show();
                 }catch (Exception e){
-                    dialog.dismiss();
                     e.printStackTrace();
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                dialog.dismiss();
                 t.printStackTrace();
             }
         });
     }
+
+    @OnClick(R.id.bt_httpget)
+    public void queryJSON(){
+        dialog.show();
+        initializeRetrofit(Const.BASE_URL);
+        HashMap<String, String> params = new HashMap<>();
+        params.put("firstname", firstname.getText().toString());
+        params.put("lastname", lastname.getText().toString());
+
+        HaloAPIService apiService = retrofit.create(HaloAPIService.class);
+        Call<ResponseBody> result = apiService.getStoryOfMe(params);
+        result.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                dialog.dismiss();
+                try {
+                    if(response.body() != null)
+                        Toast.makeText(MainActivity.this," response message "+response.body().string(),Toast.LENGTH_LONG).show();
+                    if(response.errorBody()!=null)
+                        Toast.makeText(MainActivity.this," response message "+response.errorBody().string(),Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                dialog.dismiss();
+                t.printStackTrace();
+            }
+        });
+    }
+
+    @OnClick(R.id.bt_httppost)
+    public void postMessage(){
+        dialog.show();
+        initializeRetrofit(Const.BASE_URL);
+        HashMap<String,String> params = new HashMap<>();
+        params.put("username", username.getText().toString());
+        params.put("message", message.getText().toString());
+        params.put("age", age.getText().toString());
+        params.put("sex", sex.getText().toString());
+
+        HaloAPIService apiService = retrofit.create(HaloAPIService.class);
+        Call<ResponseBody> result = apiService.postMessage(params);
+        result.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                dialog.dismiss();
+                try {
+                    if(response.body()!=null)
+                        Toast.makeText(MainActivity.this," response message "+response.body().string(),Toast.LENGTH_LONG).show();
+                    if(response.errorBody()!=null)
+                        Toast.makeText(MainActivity.this," response message "+response.errorBody().string(),Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                dialog.dismiss();
+                t.printStackTrace();
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
