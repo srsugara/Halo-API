@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.syauqi.haloapi.api.HaloAPIService;
 import com.example.syauqi.haloapi.api.UserAPIService;
+import com.example.syauqi.haloapi.dagger.HaloAPIApplication;
 import com.example.syauqi.haloapi.model.Result;
 import com.example.syauqi.haloapi.model.User;
 import com.example.syauqi.haloapi.util.Const;
@@ -23,6 +24,8 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.HashMap;
+
+import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -39,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private ProgressDialog dialog;
     private ResultFragment resultFragment;
     private EventBus bus = EventBus.getDefault();
+
+    @Inject
+    Retrofit retrofit1;
 
     @InjectView(R.id.et_firstname)
     EditText firstname;
@@ -67,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.inject(this);
+        ((HaloAPIApplication) getApplication()).getMyComponent().inject(this);
 
         dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);

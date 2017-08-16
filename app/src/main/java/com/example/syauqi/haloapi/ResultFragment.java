@@ -48,15 +48,21 @@ public class ResultFragment extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_result, container, false);
 
         ButterKnife.inject(this,view);
-        EventBus.getDefault().register(this);
+
 
         return view;
     }
 
     @Override
-    public void onDestroy() {
+    public void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPause() {
         EventBus.getDefault().unregister(this);
-        super.onDestroy();
+        super.onPause();
     }
 
     @Subscribe
