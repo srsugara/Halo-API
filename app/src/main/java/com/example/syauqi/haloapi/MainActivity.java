@@ -1,6 +1,8 @@
 package com.example.syauqi.haloapi;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -14,7 +16,10 @@ import android.widget.Toast;
 import com.example.syauqi.haloapi.api.HaloAPIService;
 import com.example.syauqi.haloapi.api.UserAPIService;
 import com.example.syauqi.haloapi.model.Result;
+import com.example.syauqi.haloapi.model.User;
 import com.example.syauqi.haloapi.util.Const;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,6 +37,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
     private Retrofit retrofit;
     private ProgressDialog dialog;
+    private ResultFragment resultFragment;
+    private EventBus bus = EventBus.getDefault();
 
     @InjectView(R.id.et_firstname)
     EditText firstname;
@@ -66,11 +73,10 @@ public class MainActivity extends AppCompatActivity {
         dialog.setMessage("Loading");
 
         initializeRetrofit(Const.BASE_API_URL);
-
         setSupportActionBar(toolbar);
     }
 
-    private void initializeRetrofit(String url){
+    private void initializeRetrofit(String url) {
         retrofit = new Retrofit.Builder()
                 .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -78,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.bt_getasmodel)
-    public void getDataAsModel(){
+    public void getDataAsModel() {
         dialog.show();
         UserAPIService apiService = retrofit.create(UserAPIService.class);
         Call<Result> result = apiService.getResultInfo();
@@ -87,10 +93,10 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<Result> call, Response<Result> response) {
                 dialog.dismiss();
                 try {
-                    Toast.makeText(MainActivity.this," response version "+response.body().getInfo().getVersion()+"\n response seed " + response.body().getInfo().getSeed(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, " response version " + response.body().getInfo().getVersion() + "\n response seed " + response.body().getInfo().getSeed(), Toast.LENGTH_SHORT).show();
                     System.out.println("response output version " + response.body().getInfo().getVersion());
                     System.out.println("response output seed " + response.body().getInfo().getSeed());
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -104,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.bt_getasjson)
-    public void getDataAsJSON(){
+    public void getDataAsJSON() {
         dialog.show();
         UserAPIService apiService = retrofit.create(UserAPIService.class);
         Call<ResponseBody> result = apiService.getResultAsJSON();
@@ -113,8 +119,8 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 dialog.dismiss();
                 try {
-                    Toast.makeText(MainActivity.this," response version "+response.body().string(),Toast.LENGTH_SHORT).show();
-                }catch (Exception e){
+                    Toast.makeText(MainActivity.this, " response version " + response.body().string(), Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -128,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.bt_httpget)
-    public void queryJSON(){
+    public void queryJSON() {
         dialog.show();
         initializeRetrofit(Const.BASE_URL);
         HashMap<String, String> params = new HashMap<>();
@@ -142,10 +148,10 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 dialog.dismiss();
                 try {
-                    if(response.body() != null)
-                        Toast.makeText(MainActivity.this," response message "+response.body().string(),Toast.LENGTH_LONG).show();
-                    if(response.errorBody()!=null)
-                        Toast.makeText(MainActivity.this," response message "+response.errorBody().string(),Toast.LENGTH_LONG).show();
+                    if (response.body() != null)
+                        Toast.makeText(MainActivity.this, " response message " + response.body().string(), Toast.LENGTH_LONG).show();
+                    if (response.errorBody() != null)
+                        Toast.makeText(MainActivity.this, " response message " + response.errorBody().string(), Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -160,14 +166,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.bt_httppost)
-    public void postMessage(){
+    public void postMessage() {
         dialog.show();
         initializeRetrofit(Const.BASE_URL);
-        HashMap<String,String> params = new HashMap<>();
+        HashMap<String, String> params = new HashMap<>();
         params.put("username", username.getText().toString());
         params.put("message", message.getText().toString());
         params.put("age", age.getText().toString());
         params.put("sex", sex.getText().toString());
+
+        FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
+        resultFragment = new ResultFragment();
+        fTrans.replace(R.id.container, resultFragment);
+        fTrans.commit();
+        User user = new User();
+        user.setUsername(username.getText().toString());
+        user.setMessage(message.getText().toString());
+        user.setAge(age.getText().toString());
+        user.setSex(sex.getText().toString());
+
+        bus.post(user);
 
         HaloAPIService apiService = retrofit.create(HaloAPIService.class);
         Call<ResponseBody> result = apiService.postMessage(params);
@@ -175,11 +193,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 dialog.dismiss();
+
                 try {
-                    if(response.body()!=null)
-                        Toast.makeText(MainActivity.this," response message "+response.body().string(),Toast.LENGTH_LONG).show();
-                    if(response.errorBody()!=null)
-                        Toast.makeText(MainActivity.this," response message "+response.errorBody().string(),Toast.LENGTH_LONG).show();
+                    if (response.body() != null) {
+                        // Post
+                        Toast.makeText(MainActivity.this, " response message " + response.body().string(), Toast.LENGTH_LONG).show();
+
+                    }
+                    if (response.errorBody() != null)
+                        Toast.makeText(MainActivity.this, " response message " + response.errorBody().string(), Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

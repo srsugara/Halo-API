@@ -124,5 +124,13 @@
             android:layout_margin="10dp"
             android:text="HTTP POST Form" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/container"
+            android:layout_below="@+id/bt_httppost"
+            android:layout_marginTop="20dp"/>
+
     </RelativeLayout>
 </ScrollView>
