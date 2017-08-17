@@ -16,7 +16,7 @@ public class HaloAPIApplication extends Application {
         super.onCreate();
 
         myComponent = DaggerHaloAPIComponent.builder()// This also corresponds to the name of your module: %component_name%Module
-                .haloAPIModule(new HaloAPIModule(Const.BASE_API_URL))
+                .haloAPIModule(new HaloAPIModule())
                 .build();
     }
 

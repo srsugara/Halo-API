@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -38,13 +39,15 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    private Retrofit retrofit;
     private ProgressDialog dialog;
     private ResultFragment resultFragment;
     private EventBus bus = EventBus.getDefault();
 
-    @Inject
+    @Inject @Named("service user")
     Retrofit retrofit1;
+
+    @Inject @Named("service twohgo")
+    Retrofit retrofit2;
 
     @InjectView(R.id.et_firstname)
     EditText firstname;
@@ -79,21 +82,13 @@ public class MainActivity extends AppCompatActivity {
         dialog.setIndeterminate(true);
         dialog.setMessage("Loading");
 
-        initializeRetrofit(Const.BASE_API_URL);
         setSupportActionBar(toolbar);
-    }
-
-    private void initializeRetrofit(String url) {
-        retrofit = new Retrofit.Builder()
-                .baseUrl(url)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
     }
 
     @OnClick(R.id.bt_getasmodel)
     public void getDataAsModel() {
         dialog.show();
-        UserAPIService apiService = retrofit.create(UserAPIService.class);
+        UserAPIService apiService = retrofit1.create(UserAPIService.class);
         Call<Result> result = apiService.getResultInfo();
         result.enqueue(new Callback<Result>() {
             @Override
@@ -119,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.bt_getasjson)
     public void getDataAsJSON() {
         dialog.show();
-        UserAPIService apiService = retrofit.create(UserAPIService.class);
+        UserAPIService apiService = retrofit1.create(UserAPIService.class);
         Call<ResponseBody> result = apiService.getResultAsJSON();
         result.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -143,12 +138,11 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.bt_httpget)
     public void queryJSON() {
         dialog.show();
-        initializeRetrofit(Const.BASE_URL);
         HashMap<String, String> params = new HashMap<>();
         params.put("firstname", firstname.getText().toString());
         params.put("lastname", lastname.getText().toString());
 
-        HaloAPIService apiService = retrofit.create(HaloAPIService.class);
+        HaloAPIService apiService = retrofit1.create(HaloAPIService.class);
         Call<ResponseBody> result = apiService.getStoryOfMe(params);
         result.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -175,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.bt_httppost)
     public void postMessage() {
         dialog.show();
-        initializeRetrofit(Const.BASE_URL);
         HashMap<String, String> params = new HashMap<>();
         params.put("username", username.getText().toString());
         params.put("message", message.getText().toString());
@@ -194,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
         bus.post(user);
 
-        HaloAPIService apiService = retrofit.create(HaloAPIService.class);
+        HaloAPIService apiService = retrofit2.create(HaloAPIService.class);
         Call<ResponseBody> result = apiService.postMessage(params);
         result.enqueue(new Callback<ResponseBody>() {
             @Override

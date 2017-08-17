@@ -1,5 +1,8 @@
 package com.example.syauqi.haloapi.dagger;
 
+import com.example.syauqi.haloapi.util.Const;
+
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -15,15 +18,24 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class HaloAPIModule {
     private String url;
 
-    public HaloAPIModule(String url){
-        this.url = url;
+    @Provides
+    @Singleton
+    @Named("service user")
+    public Retrofit initialRetrofit1(){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Const.BASE_API_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        return retrofit;
     }
 
     @Provides
     @Singleton
-    public Retrofit initialRetrofit(){
+    @Named("service twohgo")
+    public Retrofit initialRetrofit2(){
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(url)
+                .baseUrl(Const.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
